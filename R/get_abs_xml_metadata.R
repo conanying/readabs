@@ -145,7 +145,7 @@ get_specific_xml_page <- function(url, page) {
       } else {
         stop(
           "Cannot find valid entry for requested data",
-          "in the ABS Time Series Directory"
+          " in the ABS Time Series Directory"
         )
       }
     }
