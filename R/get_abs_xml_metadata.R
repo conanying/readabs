@@ -92,10 +92,11 @@ get_specific_xml_page <- function(url, page) {
     first_url <- url
   }
 
-  # Some tables in the ABS TSD start with a leading zero, as in
-  # Table 01 rather than Table 1; the 0 needs to be included. Here we first test
-  # for a readable XML file using the table number supplied (eg. "1"); if that
-  # doesn't work then we try with a leading zero ("01").
+  # Some tables in the ABS TSD start with one or two leading zeros, as in
+  # Table 01 or Table 001 rather than Table 1; the 0 needs to be included. 
+  # Here we first test for a readable XML file using the table number 
+  # supplied (eg. "1"); if that doesn't work then we try with a leading 
+  # zero ("01"), then two leading zeros ("001").
 
   safely_get_xml_dfs <- purrr::safely(get_xml_dfs)
   first_page <- safely_get_xml_dfs(first_url)
@@ -117,9 +118,7 @@ get_specific_xml_page <- function(url, page) {
     }
 
     # now try prepending a 0 on the ttitle
-
     first_url <- gsub("ttitle=", "ttitle=0", first_url)
-
     first_page <- safely_get_xml_dfs(first_url)
 
     first_url_works <- if (!is.null(first_page$result)) {
@@ -131,10 +130,24 @@ get_specific_xml_page <- function(url, page) {
     if (first_url_works) {
       url <- gsub("ttitle=", "ttitle=0", url)
     } else {
-      stop(
-        "Cannot find valid entry for requested data",
-        "in the ABS Time Series Directory"
-      )
+      # now try prepending a 00 on the ttitle
+      first_url <- gsub("ttitle=0", "ttitle=00", first_url)
+      first_page <- safely_get_xml_dfs(first_url)
+
+      first_url_works <- if (!is.null(first_page$result)) {
+        TRUE
+      } else {
+        FALSE
+      }
+
+      if (first_url_works) {
+        url <- gsub("ttitle=", "ttitle=00", url)
+      } else {
+        stop(
+          "Cannot find valid entry for requested data",
+          "in the ABS Time Series Directory"
+        )
+      }
     }
   }
 
